@@ -63,21 +63,20 @@ test('save with large cache outputs should fail', async () => {
   const reserveCacheMock = jest
     .spyOn(cacheHttpClient, 'reserveCache')
     .mockImplementation(async () => {
-      const response: ITypedResponseWithErrorMessage<ReserveCacheResponse> = {
+      const response: ITypedResponse<ReserveCacheResponse> = {
         statusCode: 400,
         result: null,
-        headers: {},
-        typeKey: 'InvalidReserveCacheRequestException'
+        headers: {}
       }
       return response
     })
 
   await expect(saveCache([filePath], primaryKey)).rejects.toThrowError(
-    'Cache size of ~11264 MB (11811160064 B) is over the data cap limit, not saving cache.'
+    'Cache size of ~11264 MB (11811160064 B) is over the 10GB limit, not saving cache.'
   )
 
   const archiveFolder = '/foo/bar'
-
+  expect(reserveCacheMock).toHaveBeenCalledTimes(1)
   expect(createTarMock).toHaveBeenCalledTimes(1)
   expect(createTarMock).toHaveBeenCalledWith(
     archiveFolder,
@@ -94,7 +93,7 @@ test('save with reserve cache failure should fail', async () => {
   const reserveCacheMock = jest
     .spyOn(cacheHttpClient, 'reserveCache')
     .mockImplementation(async () => {
-      const response: ITypedResponseWithErrorMessage<ReserveCacheResponse> = {
+      const response: ITypedResponse<ReserveCacheResponse> = {
         statusCode: 500,
         result: null,
         headers: {}
